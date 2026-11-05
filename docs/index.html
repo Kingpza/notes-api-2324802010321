@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bài 1 - Bảng so sánh máy cá nhân và Codespace</title>
+  <style>
+    body { margin: 20px 14px; font-family: "Times New Roman", Times, serif; font-size: 16px; color: #000; }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    th, td { border: 1px solid #d7dfe5; padding: 7px 6px; vertical-align: top; text-align: left; overflow-wrap: anywhere; }
+    th { font-weight: bold; }
+    th:first-child { width: 66%; }
+    th:nth-child(2), th:nth-child(3) { width: 17%; }
+    code { color: #d63384; font-size: 0.9em; }
+    @media (max-width: 700px) {
+      body { margin: 12px 6px; font-size: 14px; }
+      th, td { padding: 6px 4px; }
+      th:first-child { width: 45%; }
+      th:nth-child(2), th:nth-child(3) { width: 27.5%; }
+    }
+  </style>
+</head>
+<body>
+  <table>
+    <thead>
+      <tr>
+        <th>Tiêu chí</th>
+        <th>Máy cá nhân</th>
+        <th>Codespace</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Thời gian từ lúc bắt đầu đến khi chạy được <code>node -v</code></td>
+        <td>Chưa ghi nhận thời gian; Node.js v26.13.0</td>
+        <td>Chưa ghi nhận thời gian; Node.js v22.23.4</td>
+      </tr>
+      <tr>
+        <td>Số CPU, RAM (từ API)</td>
+        <td>AMD Ryzen 5 5500U, 12 luồng logic; RAM 16 GB</td>
+        <td>2 vCPU; RAM 7,8 GiB (đo qua terminal; cần đối chiếu GET /)</td>
+      </tr>
+      <tr>
+        <td>Hệ điều hành</td>
+        <td>Windows 11 Home Single Language</td>
+        <td>Debian GNU/Linux 13 (trixie)</td>
+      </tr>
+      <tr>
+        <td>Cách truy cập từ thiết bị khác</td>
+        <td>Cần cấu hình mạng nội bộ hoặc chia sẻ dịch vụ qua Internet</td>
+        <td>Mở URL chuyển tiếp cổng 3000; đặt Public để thử trên điện thoại rồi đổi lại Private</td>
+      </tr>
+      <tr>
+        <td>Chi phí, đo bằng gì</td>
+        <td>Chi phí mua máy, điện và bảo trì; đo bằng VNĐ và kWh</td>
+        <td>Compute 2-core: 0,67 giờ (01/11) và 0,05 giờ (05/11); chi phí gộp 01/11 là 0,12 USD, thực thu 0 USD. Đo compute theo thời gian và storage theo GB-tháng.</td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>
