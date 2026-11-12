@@ -57,5 +57,119 @@
       </tr>
     </tbody>
   </table>
+
+  <h1>Bài 2 - Ảo hóa, container và mô phỏng trung tâm dữ liệu</h1>
+
+  <h2>Phần A - Container</h2>
+  <p>Image đã build từ Dockerfile ở thư mục gốc và được đẩy lên GHCR. Package công khai:
+    <a href="https://github.com/users/Kingpza/packages/container/package/notes-api">ghcr.io/kingpza/notes-api:1.0</a>.
+    Đã kiểm tra pull image công khai và API trả HTTP 200.
+  </p>
+
+  <h3>So sánh Codespace (VM) và container notes2</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Tiêu chí</th>
+        <th>Codespace (VM)</th>
+        <th>Container notes2</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Thời gian khởi động</td>
+        <td>Chưa ghi nhận phép đo khởi động VM ở Bài 1</td>
+        <td>0,783 giây với <code>time docker run --rm ghcr.io/kingpza/notes-api:1.0 node -e '1'</code>; image đã có sẵn cục bộ</td>
+      </tr>
+      <tr>
+        <td>Kích thước / lưu trữ</td>
+        <td>Hạn mức lưu trữ Codespace: 15 GB-tháng</td>
+        <td>Image: 250.505.758 byte (khoảng 250,5 MB)</td>
+      </tr>
+      <tr>
+        <td>Nhân hệ điều hành</td>
+        <td>Kernel Codespace: <code>6.8.0-1070-azure</code></td>
+        <td>Cùng kernel <code>6.8.0-1070-azure</code>; container chia sẻ kernel với máy chủ</td>
+      </tr>
+      <tr>
+        <td>Mức cô lập</td>
+        <td>VM có kernel riêng và cô lập ở mức máy ảo</td>
+        <td>Cô lập tiến trình bằng namespace/cgroups nhưng dùng chung kernel</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Kết quả chạy hai bản sao</h3>
+  <p>Do cổng 3000 đang được dùng, hai bản sao kiểm tra trên cổng host 3100 và 3101.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Container</th>
+        <th>Giới hạn</th>
+        <th>Kết quả API</th>
+        <th>docker stats</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>notes-lab2-a (3100)</td>
+        <td>Không đặt giới hạn CPU/RAM</td>
+        <td><code>host=f72359676d0f</code>, <code>cpus=2</code>, <code>memoryGB=7.8</code></td>
+        <td>17,07 MiB / 7,756 GiB</td>
+      </tr>
+      <tr>
+        <td>notes-lab2-b (3101)</td>
+        <td><code>--cpus=0.5 --memory=128m</code></td>
+        <td><code>host=2b5fcf8e8ccd</code>, <code>cpus=2</code>, <code>memoryGB=7.8</code></td>
+        <td>15,29 MiB / 128 MiB</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>Hai container có hostname khác nhau nhưng API báo cùng CPU/RAM vì <code>os.cpus()</code> và <code>os.totalmem()</code> đọc thông tin hệ điều hành dùng chung. Giới hạn cgroups vẫn được áp dụng, thể hiện ở <code>docker stats</code>.</p>
+
+  <h2>Phần B - Mô phỏng CloudSim Plus</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Lần chạy</th>
+        <th>Thay đổi duy nhất</th>
+        <th>Kết quả cloudlet cuối</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>0</td>
+        <td>Cấu hình gốc, CloudletSchedulerTimeShared mặc định</td>
+        <td>20,1 giây; 4/4 cloudlet thành công</td>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td>Nhân đôi VMS từ 2 lên 4</td>
+        <td>45,6 giây; 4/4 cloudlet thành công. VM 2 và 3 không được đặt lên host sau các lần thử lại.</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>Khôi phục VMS=2, nhân đôi CLOUDLETS từ 4 lên 8</td>
+        <td>Cloudlet hoàn tất cuối ở 40,1 giây, nhưng chỉ 4/8 thành công. Cloudlet 4-7 còn chờ vì VM hết RAM/BW; khi mô phỏng kết thúc chúng vẫn chưa hoàn thành.</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>Khôi phục CLOUDLETS=4, đổi sang CloudletSchedulerSpaceShared</td>
+        <td>20,1 giây; 4/4 cloudlet thành công</td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="small">Thời gian trong bảng lấy từ cột <code>FinishTime</code> của cloudlet cuối đã hoàn tất, không phải thời điểm kết thúc mô phỏng. Lần 2 không có thời điểm hoàn thành cho cả 8 cloudlet vì bốn cloudlet vẫn đang chờ khi VM bị hủy.</p>
+
+  <h2>Câu hỏi phản biện</h2>
+  <h3>1. Vì sao notes2 vẫn báo memoryGB bằng RAM máy chủ? Ứng dụng cần lưu ý gì?</h3>
+  <p><code>os.totalmem()</code> đọc tổng RAM mà kernel báo, không đọc hạn mức cgroup của container. Vì vậy API vẫn trả 7,8 GB trong khi Docker giới hạn container ở 128 MiB. Node.js nên đặt giới hạn heap phù hợp bằng <code>--max-old-space-size</code>; Java có thể dùng <code>-Xmx</code> hoặc <code>-XX:MaxRAMPercentage</code>. Cần chừa bộ nhớ cho phần ngoài heap và các thành phần khác của tiến trình.</p>
+
+  <h3>2. Time-shared và space-shared khác nhau thế nào trong lần 3?</h3>
+  <p>Time-shared phân chia thời gian CPU giữa các cloudlet; space-shared xếp cloudlet chờ khi không đủ PE được yêu cầu. Với workload này, cả lần 0 và lần 3 đều hoàn tất ở 20,1 giây: mỗi VM có 4 lõi và mỗi cloudlet yêu cầu 2 lõi, nên hai cloudlet vừa đủ chạy đồng thời trên mỗi VM. Gói giá rẻ có thể dùng time-shared để tăng mức sử dụng tài nguyên, đổi lại hiệu năng có thể biến động; space-shared phù hợp hơn khi cần phân bổ rõ ràng và khả năng dự đoán.
+  </p>
+
+  <h3>3. Mô phỏng giúp gì trước khi thuê hạ tầng thật, và có thể sai lệch ở đâu?</h3>
+  <p>Mô phỏng cho phép so sánh cấu hình và chính sách lập lịch trước khi thuê tài nguyên, qua đó phát hiện điểm nghẽn như thiếu lõi, RAM hoặc băng thông. Kết quả phụ thuộc vào giả định và mô hình mô phỏng; chúng có thể không phản ánh đúng độ trễ mạng, lưu trữ, I/O, nhiễu từ workload khác và biến động của hạ tầng thực tế. Vì vậy nên dùng mô phỏng để định hướng rồi xác nhận bằng benchmark thực tế.</p>
 </body>
 </html>
