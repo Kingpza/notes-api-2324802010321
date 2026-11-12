@@ -1,204 +1,61 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bài 2 - Ảo hóa, container và mô phỏng trung tâm dữ liệu</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bài 1 - Bảng so sánh máy cá nhân và Codespace</title>
   <style>
-    body {
-      margin: 24px;
-      font-family: "Segoe UI", Tahoma, sans-serif;
-      color: #1f2937;
-      background: #f8fafc;
-      line-height: 1.6;
-    }
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      padding: 24px;
-      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
-    }
-    h1, h2, h3 { color: #0f172a; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 16px 0 20px;
-      table-layout: fixed;
-    }
-    th, td {
-      border: 1px solid #d7dfe5;
-      padding: 10px 8px;
-      vertical-align: top;
-      text-align: left;
-      overflow-wrap: anywhere;
-    }
-    th {
-      background: #eef6ff;
-      font-weight: 700;
-    }
-    code {
-      background: #f1f5f9;
-      padding: 2px 6px;
-      border-radius: 5px;
-      font-size: 0.93em;
-    }
-    .note {
-      background: #fff7ed;
-      border-left: 4px solid #f59e0b;
-      padding: 12px 14px;
-      margin: 12px 0;
-    }
-    ul { padding-left: 20px; }
-    .small { font-size: 0.95em; }
-    @media (max-width: 720px) {
-      body { margin: 12px; }
-      .container { padding: 16px; }
-      table { font-size: 0.92em; }
+    body { margin: 20px 14px; font-family: "Times New Roman", Times, serif; font-size: 16px; color: #000; }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    th, td { border: 1px solid #d7dfe5; padding: 7px 6px; vertical-align: top; text-align: left; overflow-wrap: anywhere; }
+    th { font-weight: bold; }
+    th:first-child { width: 66%; }
+    th:nth-child(2), th:nth-child(3) { width: 17%; }
+    code { color: #d63384; font-size: 0.9em; }
+    @media (max-width: 700px) {
+      body { margin: 12px 6px; font-size: 14px; }
+      th, td { padding: 6px 4px; }
+      th:first-child { width: 45%; }
+      th:nth-child(2), th:nth-child(3) { width: 27.5%; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Bài 2 - Ảo hóa, container và mô phỏng trung tâm dữ liệu</h1>
-
-    <h2>1. Dockerfile / GHCR</h2>
-    <p><strong>Dockerfile:</strong></p>
-    <pre><code>FROM node:22-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --omit=dev
-COPY src ./src
-ENV PORT=3000
-EXPOSE 3000
-USER node
-CMD ["node", "src/server.js"]</code></pre>
-
-    <p><strong>.dockerignore:</strong></p>
-    <pre><code>node_modules
-.env
-.git
-docs</code></pre>
-
-    <p><strong>GHCR package:</strong> <a href="https://github.com/users/Kingpza/packages/container/package/notes-api" target="_blank" rel="noreferrer">Link package cần cập nhật sau khi push</a></p>
-
-    <h2>2. Bảng so sánh: Codespace (VM) và container notes2</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Tiêu chí</th>
-          <th>Codespace (máy ảo)</th>
-          <th>Container notes2</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Thời gian khởi động</td>
-          <td>Đo bằng <code>time docker run --rm notes-api:1.0 node -e "1"</code></td>
-          <td>Đo bằng cùng lệnh trên trong container</td>
-        </tr>
-        <tr>
-          <td>Kích thước</td>
-          <td>15 GB/tháng (của Codespace)</td>
-          <td>Được hiểu là kích thước image Docker: xem <code>docker images notes-api</code> và cột <code>SIZE</code></td>
-        </tr>
-        <tr>
-          <td>Nhân hệ điều hành</td>
-          <td>Riêng, VM có kernel riêng</td>
-          <td>Dùng chung kernel máy chủ; <code>uname -r</code> trong host và container giống nhau</td>
-        </tr>
-        <tr>
-          <td>Mức cô lập</td>
-          <td>Cao, VM cô lập từ host</td>
-          <td>Thấp hơn VM, cô lập ở mức process và namespace/cgroups nhưng chia sẻ kernel</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>3. Kết quả chạy hai bản sao</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Container</th>
-          <th>Port</th>
-          <th>CPU giới hạn</th>
-          <th>RAM giới hạn</th>
-          <th>Host</th>
-          <th>Ghi chú</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>notes1</td>
-          <td>3000</td>
-          <td>Không giới hạn</td>
-          <td>Không giới hạn</td>
-          <td>ID container riêng</td>
-          <td>API chạy bình thường</td>
-        </tr>
-        <tr>
-          <td>notes2</td>
-          <td>3001</td>
-          <td>0.5 CPU</td>
-          <td>128 MiB</td>
-          <td>ID container riêng</td>
-          <td><code>docker stats</code> hiển thị <code>MEM USAGE / LIMIT</code> = 128MiB</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="note">
-      <strong>Nhận xét:</strong> API trong container vẫn trả về giá trị <code>memoryGB</code> tương đương RAM máy chủ vì ứng dụng đang gọi <code>os.totalmem()</code> trên kernel của host; đây là thông tin của toàn bộ hệ điều hành nền, không phải “bộ nhớ còn lại của container”. Giới hạn tài nguyên thực tế nằm ở cgroup và được hiển thị trong <code>docker stats</code>, không phải ở API JSON của app.
-    </div>
-
-    <h2>4. Bảng mô phỏng CloudSim Plus</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Lần chạy</th>
-          <th>Thay đổi</th>
-          <th>Thời điểm hoàn thành cloudlet cuối (giây mô phỏng)</th>
+  <table>
+    <thead>
+      <tr>
+        <th>Tiêu chí</th>
+        <th>Máy cá nhân</th>
+        <th>Codespace</th>
       </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>0</td>
-          <td>Giữ nguyên cấu hình gốc</td>
-          <td>Điền giá trị thực tế</td>
-        </tr>
-        <tr>
-          <td>1</td>
-          <td>Nhân đôi <code>VMS</code></td>
-          <td>Điền giá trị thực tế</td>
-        </tr>
-        <tr>
-          <td>2</td>
-          <td>Nhân đôi <code>CLOUDLETS</code></td>
-          <td>Điền giá trị thực tế</td>
-        </tr>
-        <tr>
-          <td>3</td>
-          <td>Chuyển scheduler sang <code>CloudletSchedulerSpaceShared</code></td>
-          <td>Điền giá trị thực tế</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h2>5. Câu hỏi phản biện</h2>
-
-    <h3>1) Vì sao API trong container notes2 vẫn báo memoryGB bằng RAM máy chủ dù đã giới hạn 128 MB?</h3>
-    <p>Vì <code>os.totalmem()</code> đọc tổng RAM của hệ điều hành đang chạy, không đọc giới hạn cgroup mà Docker áp trên container. Container bị giới hạn bởi cgroups, nhưng ứng dụng Node.js/Java không tự động “thấy” limit đó qua API hệ thống. Với Java cần đặt heap tối ưu bằng <code>-Xmx</code>, <code>-Xms</code>, và lưu ý <code>-XX:MaxRAMPercentage</code>; với Node.js có thể dùng <code>NODE_OPTIONS=--max-old-space-size=... </code> để kiểm soát bộ nhớ heap (không phải toàn bộ RAM vật lý).</p>
-
-    <h3>2) Time-shared và space-shared khác nhau như thế nào trong kết quả lần 3?</h3>
-    <p>Time-shared chia thời gian CPU giữa các cloudlet trong cùng VM; space-shared cấp tài nguyên theo phân vùng riêng và cloudlet chờ khi không đủ tài nguyên. Với CloudSim, khi chuyển sang <code>CloudletSchedulerSpaceShared</code>, các cloudlet sẽ không “chạy cùng lúc” trên cùng bộ xử lý nếu không đủ PE, nên thời gian hoàn thành cuối cùng có thể tăng hoặc xảy ra chờ đợi. Một nhà cung cấp đám mây hướng thị trường giá rẻ thường ưu tiên time-shared vì tận dụng tài nguyên cao hơn và chi phí thấp hơn; còn doanh nghiệp cần hiệu năng ổn định sẽ dùng space-shared hoặc các mô hình cấp phát riêng.</p>
-
-    <h3>3) Mô phỏng giúp ích gì trước khi thuê hạ tầng thật, và kết quả có thể sai lệch ở điểm nào?</h3>
-    <p>Mô phỏng giúp ước lượng thời gian, tối ưu lập lịch, đánh giá hiệu suất khi thay đổi số VM / cloudlet / scheduler trước khi chi tiền thuê hạ tầng thật. Tuy nhiên, nó có thể sai lệch vì mô hình giả định cụ thể, không phản ánh đúng mạng, lưu trữ, I/O, hot spot, workload thay đổi, và tắc nghẽn thực tế của hệ thống. Vì vậy mô phỏng là công cụ để chọn phương án ban đầu, còn kiểm tra thực tế vẫn cần benchmark trên môi trường thật.</p>
-
-    <h2>6. Kết luận</h2>
-    <p>Container cung cấp nhanh, nhẹ và tiết kiệm tài nguyên hơn máy ảo, nhưng vẫn chia sẻ kernel với host. Mô phỏng CloudSim giúp chuẩn bị tốt trước khi triển khai hệ thống lớn, đồng thời giúp hiểu rõ hơn cách các chính sách lập lịch ảnh hưởng đến thời gian hoàn thành công việc. Secret <code>CR_PAT</code> chỉ là bước xác thực để push image lên GHCR; bước thực thi quan trọng là build, tag, push, rồi đổi visibility của package sang Public.</p>
-  </div>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Thời gian từ lúc bắt đầu đến khi chạy được <code>node -v</code></td>
+        <td>Chưa ghi nhận thời gian; Node.js v26.13.0</td>
+        <td>Chưa ghi nhận thời gian; Node.js v22.23.4</td>
+      </tr>
+      <tr>
+        <td>Số CPU, RAM (từ API)</td>
+        <td>AMD Ryzen 5 5500U, 12 luồng logic; RAM 16 GB</td>
+        <td>2 vCPU; RAM 7,8 GiB (đo qua terminal; cần đối chiếu GET /)</td>
+      </tr>
+      <tr>
+        <td>Hệ điều hành</td>
+        <td>Windows 11 Home Single Language</td>
+        <td>Debian GNU/Linux 13 (trixie)</td>
+      </tr>
+      <tr>
+        <td>Cách truy cập từ thiết bị khác</td>
+        <td>Cần cấu hình mạng nội bộ hoặc chia sẻ dịch vụ qua Internet</td>
+        <td>Mở URL chuyển tiếp cổng 3000; đặt Public để thử trên điện thoại rồi đổi lại Private</td>
+      </tr>
+      <tr>
+        <td>Chi phí, đo bằng gì</td>
+        <td>Chi phí mua máy, điện và bảo trì; đo bằng VNĐ và kWh</td>
+        <td>Compute 2-core: 0,67 giờ (01/11) và 0,05 giờ (05/11); chi phí gộp 01/11 là 0,12 USD, thực thu 0 USD. Đo compute theo thời gian và storage theo GB-tháng.</td>
+      </tr>
+    </tbody>
+  </table>
 </body>
 </html>
