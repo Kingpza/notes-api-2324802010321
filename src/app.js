@@ -1,9 +1,17 @@
 const express = require('express');
 const os = require('os');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const mongoose = require('mongoose');
 const notesRouter = require('./routes/notes');
+const authRouter = require('./routes/auth');
+
+mongoose.set('sanitizeFilter', true);
 
 const app = express();
-app.use(express.json());
+app.set('trust proxy', 1);
+app.use(helmet());
+app.use(express.json({ limit: '100kb' }));
 
 app.get('/', (req, res) => {
   res.json({
@@ -17,6 +25,7 @@ app.get('/', (req, res) => {
   });
 });
 
+app.use('/auth', rateLimit({ windowMs: 15 * 60 * 1000, limit: 20 }), authRouter);
 app.use('/notes', notesRouter);
 
 app.use((err, req, res, next) => {
@@ -25,5 +34,4 @@ app.use((err, req, res, next) => {
     || err.code === 'LIMIT_FILE_SIZE';
   res.status(clientError ? 400 : 500).json({ error: err.message });
 });
-
 module.exports = app;
